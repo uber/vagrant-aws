@@ -87,6 +87,19 @@ no preconfigured defaults.
 If you have issues with SSH connecting, make sure that the instances
 are being launched with a security group that allows SSH access.
 
+Note: if you don't configure `aws.access_key_id` or `aws_secret_access_key`
+it will attempt to read credentials from environment variables first and then
+from `$HOME/.aws/`. You can choose your AWS profile and files location by using
+`aws.aws_profile` and `aws.aws_dir`, however environment variables will always
+have precedence as defined by the [AWS documentation](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+To use profile `vagrantDev` from your AWS files:
+```ruby
+  # this first line can actually be omitted
+  aws.aws_dir = ENV['HOME'] + "/.aws/"
+  aws.aws_profile = "vagrantDev"
+```
+
+
 ## Box Format
 
 Every provider in Vagrant must introduce a custom box format. This
@@ -106,6 +119,8 @@ This provider exposes quite a few provider-specific configuration options:
 * `ami` - The AMI id to boot, such as "ami-12345678"
 * `availability_zone` - The availability zone within the region to launch
   the instance. If nil, it will use the default set by Amazon.
+* `aws_profile` - AWS profile in your config files. Defaults to *default*.
+* `aws_dir` - AWS config and credentials location. Defaults to *$HOME/.aws/*.
 * `instance_ready_timeout` - The number of seconds to wait for the instance
   to become "ready" in AWS. Defaults to 120 seconds.
 * `instance_check_interval` - The number of seconds to wait to check the instance's
@@ -118,6 +133,7 @@ This provider exposes quite a few provider-specific configuration options:
   type to support both paravirtualization and hvm AMIs
 * `keypair_name` - The name of the keypair to use to bootstrap AMIs
    which support it.
+* `monitoring` - Set to "true" to enable detailed monitoring.
 * `session_token` - The session token provided by STS
 * `private_ip_address` - The private IP address to assign to an instance
   within a [VPC](http://aws.amazon.com/vpc/)
@@ -142,12 +158,14 @@ This provider exposes quite a few provider-specific configuration options:
   connection issues if, e.g., you are assigning a public IP address but your
   security groups prevent public SSH access and require you to SSH in via the
   private IP address; specify `:private_ip_address` in this case.
+* `tenancy` - When running in a VPC configure the tenancy of the instance.  Supports 'default' and 'dedicated'.
 * `tags` - A hash of tags to set on the machine.
 * `package_tags` - A hash of tags to set on the ami generated during the package operation.
 * `use_iam_profile` - If true, will use [IAM profiles](http://docs.aws.amazon.com/IAM/latest/UserGuide/instance-profiles.html)
   for credentials.
 * `block_device_mapping` - Amazon EC2 Block Device Mapping Property
 * `elb` - The ELB name to attach to the instance.
+* `unregister_elb_from_az` - Removes the ELB from the AZ on removal of the last instance if true (default). In non default VPC this has to be false.
 * `terminate_on_shutdown` - Indicates whether an instance stops or terminates
   when you initiate shutdown from the instance.
 
